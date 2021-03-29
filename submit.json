@@ -1,0 +1,16 @@
+{
+    "__default__" :
+    {
+      "p" : "bigmemm",
+      "mem" : "4G",
+      "time" : "01-00:00",
+      "name": "rando",
+    },
+    "vcf_gen" :
+    {
+      "mem": "32G",
+      "p" : "med2",
+      "time" : "01-00:00",
+      "name" : "vcf_gen",
+    },
+}
