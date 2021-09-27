@@ -2,15 +2,178 @@
     "__default__" :
     {
       "p" : "bigmemm",
-      "mem" : "4G",
-      "time" : "01-00:00",
+      "mem" : "24G",
+      "time" : "07-00:00",
       "name": "rando",
     },
     "vcf_gen" :
     {
       "mem": "32G",
-      "p" : "med2",
-      "time" : "01-00:00",
+      "p" : "bigmemh",
+      "time" : "14-00:00",
       "name" : "vcf_gen",
+      "cpus-per-task": 8,
+    },
+    "qualimap" :
+    {
+      "mem": "64G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "qualimap",
+    },
+    "get_snps" :
+    {
+      "p" : "high2",
+      "mem" : "16G",
+      "time" : "07-00:00",
+      "name": "get_snps",
+      "cpus-per-task": 4,
+    },
+    "bcf_to_vcf" :
+    {
+      "p" : "bigmemh",
+      "mem" : "32G",
+      "time" : "07-00:00",
+      "name": "bcftovcf",
+      "cpus-per-task": 8,
+    },
+    "hard_filter" :
+    {
+      "mem": "48G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "filter",
+      "cpus-per-task": 4,
+    },
+    "add_rg" :
+    {
+      "mem": "32G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "filter",
+      "cpus-per-task": 4,
+    },
+    "depth_filter1" :
+    {
+      "mem": "32G",
+      "p" : "med2",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "depth_filter2" :
+    {
+      "mem": "32G",
+      "p" : "med2",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "depth_filter3" :
+    {
+      "mem": "32G",
+      "p" : "med2",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "depth_filter4" :
+    {
+      "mem": "32G",
+      "p" : "high",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "passed_depth1" :
+    {
+      "mem": "24G",
+      "p" : "high",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "passed_depth2" :
+    {
+      "mem": "24G",
+      "p" : "high",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "passed_depth3" :
+    {
+      "mem": "24G",
+      "p" : "high",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "passed_depth4" :
+    {
+      "mem": "24G",
+      "p" : "high",
+      "time" : "14-00:00",
+      "name" : "filter",
+    },
+    "bedtools" :
+    {
+      "mem": "90G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "bedtools",
+      "cpus-per-task": 16,
+    },
+    "bamtobed" :
+    {
+      "mem": "32G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "bamtobed",
+    },
+    "bedtools2" :
+    {
+      "mem": "90G",
+      "p" : "bigmemh",
+      "time" : "14-00:00",
+      "name" : "bedtools",
+      "cpus-per-task": 16,
+    },
+    "gzip" :
+    {
+      "mem": "16G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "gzip",
+    },
+    "bgzip" :
+    {
+      "mem": "16G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "gzip",
+    },
+    "merge_vcf" :
+    {
+      "mem": "32G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "merge",
+    },
+    "extract_depth" :
+    {
+      "mem": "16G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "extractdepth",
+    },
+    "bedtools3" :
+    {
+      "mem": "90G",
+      "p" : "bigmemh",
+      "time" : "14-00:00",
+      "name" : "bedtools",
+      "cpus-per-task": 16,
+    },
+    "coverage" :
+    {
+      "mem": "150G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "coverage",
     },
 }
+
