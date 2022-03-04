@@ -1,319 +1,79 @@
 configfile: "config.yaml"
+import pandas as pd
 
-SKELETON = config["scaffolds"]
-#scaffolds listed three per line, separated by commas within line
+# WILD CARDS 
+## new data
+### names of raw unmerged sequence reads 
+READ = glob_wildcards("data/raw/{read}_1.fq.gz").read
+### merge bam files - file contains a list of genotype followed by two sequence names to be merged
+file = pd.read_table("bamstomerge.tsv", sep = "\t", header = 0)
+MERGE_A = list(file.Merge_A)
+MERGE_B = list(file.Merge_B)
+GENO = list(file.Genotype)
+### names of merged bam files + 1 file that did not need to be merged (sequenced once)
+BAM = glob_wildcards("data/interm/rg_bam/{bam}.dedup.add_rg.bam").bam
+### scaffold groupings for vcf files based on relative size of scaffolds 
+SCAFFOLD = config["scaffolds"]
+SCAF = list(SCAFFOLD.split())
+### name of 10 repeat sequences being mapped to tripsacum for relative abundance
+REPEAT = glob_wildcards("data/repeat_abundance/repeat_seq/{repeat}.fasta").repeat
+
+
+## old data 
+SKELETON = config["scaffolds"] 
 GHOST = list(SKELETON.split())
-#GHOST- python list
-BAM = glob_wildcards("data/merged_bams/{bam}.bam").bam
+### scaffolds listed three per line, separated by commas within line
+### GHOST- python list
+
+PUMPKIN = config["contains_snps"]
+PIE = list(PUMPKIN.split())
+### only includes scaffolds that contained snps after filtering steps 
 
 PEAR = glob_wildcards("data/bed_files/{pear}.FINAL.bed").pear
-
+### names of repeats
 
 rule all:
     input:
-        coverage = expand("data/coverage/{pear}/{bam}.{pear}.coverage.bed", bam = BAM, pear = PEAR)
+# snpcalling rules
+#        align_and_sort = expand("data/interm/sorted_bam/{read}.sorted.bam", read = READ)
+#        mark_dups = expand("data/interm/mark_dups/{read}.dedup.bam", read = READ)
+#        merge = expand("data/interm/merge/{geno}.{mergeA}.{mergeB}.merged.dedup.bam", zip, geno = GENO, mergeA = MERGE_A, mergeB = MERGE_B)
+#        add_rg = expand("data/interm/rg_bam/{bam}.dedup.add_rg.bam", bam = BAM)
+#        vcf_gen = expand("data/vcf/raw_vcf/{scaf}.vcf.gz", scaf = SCAF),
+#        get_snps = expand("data/vcf/snps/{scaf}.snps.vcf.gz", scaf = SCAF)
+#        hard_filt = expand("data/vcf/hard_filter/{scaf}.filtered.2.snps.vcf.gz", scaf = SCAF),
+#        hard_excl = expand("data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz", scaf = SCAF)
+#        dp_filt1 = expand("data/vcf/depth_filter/DP2_4/{scaf}.DP2_4.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_filt2 = expand("data/vcf/depth_filter/DP2_8/{scaf}.DP2_8.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_filt3 = expand("data/vcf/depth_filter/DP2_12/{scaf}.DP2_12.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_filt4 = expand("data/vcf/depth_filter/DP1_12/{scaf}.DP1_12.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_filt5 = expand("data/vcf/depth_filter/DP1_8/{scaf}.DP1_8.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_excl1 = expand("data/vcf/depth_filter/DP2_4/{scaf}.nocall.DP2_4.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_excl2 = expand("data/vcf/depth_filter/DP2_8/{scaf}.nocall.DP2_8.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_excl3 = expand("data/vcf/depth_filter/DP2_12/{scaf}.nocall.DP2_12.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_excl4 = expand("data/vcf/depth_filter/DP1_12/{scaf}.nocall.DP1_12.filtered.snps.vcf.gz", scaf = SCAF),
+#        dp_excl5 = expand("data/vcf/depth_filter/DP1_8/{scaf}.nocall.DP1_8.filtered.snps.vcf.gz", scaf = SCAF)
+#        maxnocall1 = expand("data/vcf/max_no_call/DP2_4/{scaf}.maxnocall.DP2_4.filtered.snps.vcf.gz", scaf = SCAF)
+#        maxnocall2 = expand("data/vcf/max_no_call/DP2_8/{scaf}.maxnocall.DP2_8.filtered.snps.vcf.gz", scaf = SCAF),
+#        maxnocall3 = expand("data/vcf/max_no_call/DP2_12/{scaf}.maxnocall.DP2_12.filtered.snps.vcf.gz", scaf = SCAF),
+#        maxnocall4 = expand("data/vcf/max_no_call/DP1_12/{scaf}.maxnocall.DP1_12.filtered.snps.vcf.gz", scaf = SCAF),
+#        maxnocall5 = expand("data/vcf/max_no_call/DP1_8/{scaf}.maxnocall.DP1_8.filtered.snps.vcf.gz", scaf = SCAF)
+# genotypingpolyploids rules
+#        subsetAD = expand("data/reports/AD/{ghost}.final.AD.table", ghost = GHOST)
+#        cut = expand("data/reports/AD/{scaf}.final.DP1_8.AD.table", scaf = SCAF)
+#        alt = expand("data/ebg/input/{scaf}.alt.txt", scaf = SCAF),
+#        tot = expand("data/ebg/input/{scaf}.tot.txt", scaf = SCAF),
+#        err = expand("data/ebg/input/{scaf}.err.txt", scaf = SCAF)
+# bedtools rules
+#        bamtobed1 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed", bam = BAM),
+#        bamtobed2 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.bed", bam = BAM)
+        coverage = expand("data/coverage/{repeat}/{bam}.{repeat}.coverage.bed", bam = BAM, repeat = REPEAT),
+        zipcov = expand("data/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz", bam = BAM, repeat = REPEAT)
+# qualimap
+#        expand("data/reports/qualimap/{bam}_stats/report.pdf", bam = BAM)
 
+# Rules
+#include: "rules/snpcalling.smk"
 include: "rules/bedtools.smk"
-
-# generate coverage data for BAM files
-rule qualimap:
-    input:
-        "data/raw_bams/{bam}_dedup.bam"
-    output:
-        "data/reports/bam_qualimaps/{bam}_stats/report.pdf"
-    params:
-        dir = "data/reports/bam_qualimaps/{bam}_stats"
-    run:
-        shell("qualimap bamqc -bam {input} -outdir {params.dir} -outformat PDF")
-
-### CREATING AND FILTERING VCFs FROM BAM FILES ###
-
-# generate VCFs from BAM files
-rule vcf_gen:
-    input:
-        fasta="data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        bam="data/rg_bam/bam_list.txt"
-    output:
-        "data/vcf/raw_vcf/{ghost}.vcf.gz"
-    params:
-        region = "{ghost}"
-    shell:
-        """
-        module load bcftools
-        bcftools mpileup -Ou --annotate FORMAT/AD,FORMAT/DP -f {input.fasta} \
-        -b {input.bam} -r {params.region} --threads 8 | bcftools call -mv -Oz -o {output}
-        bcftools index -t {output}
-        """
-
-# add read groups to merged BAM file 
-rule add_rg:
-    input:
-        "data/merged_bams/{bam}.bam"
-    output:
-        bam = touch("data/rg_bam/{bam}_add_rg.bam")
-    params:
-        tmp = "/scratch/julespor/addrg/{bam}",
-        sample = "{bam}"
-    run:
-        shell("mkdir -p {params.tmp}")
-        shell("gatk AddOrReplaceReadGroups \
-        -I={input} \
-        -O={output.bam} \
-        -RGID=4 \
-        -RGLB=lib1 \
-        -RGPL=illumina \
-        -RGPU=unit1 \
-        -RGSM={params.sample} \
-        --TMP_DIR {params.tmp} \
-        --CREATE_INDEX=true")
-        shell("rm -rf {params.tmp}")
-
-# VCFs were actually in binary (bcf) format --> convert to compressed vcf before gatk SelectVariants
-# not used in final processing (fixed issue down the line)
-rule bcf_to_vcf:
-    input:
-        bcf = "data/vcf/raw_vcf/{ghost}.vcf"
-    output:
-        vcf = "data/vcf/compressed_vcf/{ghost}.vcf.gz"
-    params:
-        temp = "tmp.{ghost}.vcf.gz"
-    shell:
-        """
-        bcftools index -f {input.bcf}
-        bcftools view -O z -o {params.temp} {input.bcf}
-        mv {params.temp} {output.vcf}
-        bcftools index -t {output.vcf}
-        """
-
-# Select only bialleleic SNPs
-rule get_snps:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/raw_vcf/{ghost}.vcf.gz" 
-    output:
-        "data/vcf/snps/{ghost}.snps.vcf.gz"
-    shell:
-        """
-        module load GATK
-        gatk SelectVariants \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -select-type SNP \
-        --restrict-alleles-to BIALLELIC \
-        -O {output}
-        """
-
-# Filtering diagnostics -- selected 3 vcfs to execute on bash
-# Extract variant quality scores
-# https://evodify.com/gatk-in-non-model-organism/
-rule diagnostics:
-    input:
-        vcf = "data/vcf/snps/{ghost}.snps.vcf",
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta"
-    output:
-        "data/reports/variantstotable/{ghost}.snps.vcf.table"
-    run:
-        shell("gatk VariantsToTable \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -F CHROM -F POS -F QUAL -F QD -F DP -F MQ -F AD \
-        -O {output}")
-
-# Apply hard filtering following GATK best practices - remove low confidence sites
-# https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2
-# https://gatk.broadinstitute.org/hc/en-us/articles/360037499012?id=3225
-rule hard_filter:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/snps/{ghost}.snps.vcf.gz"
-    output:
-        filt =  "data/vcf/hard_filter/{ghost}.filtered.snps.vcf.gz",
-#filt=low quality sites are labeled but not removed
-        exclude = "data/vcf/hard_filter/{ghost}.filtered.nocall.snps.vcf.gz"
-#exclude=low quality sites removed
-    run:
-        shell("gatk VariantFiltration \
-        -V {input.vcf} \
-        -filter \"QUAL < 30.0\" --filter-name \"QUAL30\" \
-        -filter \"MQ < 20.0\" --filter-name \"MQ20\" \
-        -O {output.filt}")
-        shell("gatk SelectVariants -V {output.filt} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output.exclude}")
-
-# filtering for different genotype depths; removes indidivuals at a site 
-rule depth_filter1:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/hard_filter/{ghost}.filtered.nocall.snps.vcf.gz"
-    output:
-        vcf = "data/vcf/depth_filter/DP2_4/{ghost}.DP2_4.filtered.nocall.snps.vcf.gz",
-        nocall = "data/vcf/max_no_call/DP2_4/{ghost}.maxnocall.DP2_4.filtered.snps.vcf.gz"
-    run:
-        shell("gatk VariantFiltration \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -G-filter \"DP < 2 || DP > 4\" \
-        -G-filter-name [DP_2-4] \
-        --set-filtered-genotype-to-no-call true \
-        -O {output.vcf}")
-        shell("gatk SelectVariants -V {output.vcf} \
-        --exclude-filtered true --max-nocall-fraction .2 -O {output.nocall}")
-
-rule depth_filter2:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/hard_filter/{ghost}.filtered.nocall.snps.vcf.gz"
-    output:
-        vcf = "data/vcf/depth_filter/DP2_8/{ghost}.DP2_8.filtered.nocall.snps.vcf.gz",
-        nocall = "data/vcf/max_no_call/DP2_8/{ghost}.maxnocall.DP2_8.filtered.snps.vcf.gz"
-    run:
-        shell("gatk VariantFiltration \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -G-filter \"DP < 2 || DP > 8\" \
-        -G-filter-name [DP_2-8] \
-        --set-filtered-genotype-to-no-call true \
-        -O {output.vcf}")
-        shell("gatk SelectVariants -V {output.vcf} \
-        --exclude-filtered true --max-nocall-fraction .2 -O {output.nocall}")
-
-rule depth_filter3:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/hard_filter/{ghost}.filtered.nocall.snps.vcf.gz"
-    output:
-        vcf = "data/vcf/depth_filter/DP2_12/{ghost}.DP2_12.filtered.nocall.snps.vcf.gz",
-        nocall = "data/vcf/max_no_call/DP2_12/{ghost}.maxnocall.DP2_12.filtered.snps.vcf.gz"
-    run:
-        shell("gatk VariantFiltration \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -G-filter \"DP < 2 || DP > 12\" \
-        -G-filter-name [DP_2-12] \
-        --set-filtered-genotype-to-no-call true \
-        -O {output.vcf}")
-        shell("gatk SelectVariants -V {output.vcf} \
-        --exclude-filtered true --max-nocall-fraction .2 -O {output.nocall}")
-
-#ambiguitiy with bgzip = silenced on 8/16
-"""
-rule depth_filter4:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/hard_filter/{ghost}.filtered.nocall.snps.vcf.gz"
-    output:
-        vcf = "data/vcf/depth_filter/DP1_12/{ghost}.DP1_12.filtered.nocall.snps.vcf.gz",
-        nocall = "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf.gz"
-    run:
-        shell("gatk VariantFiltration \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -G-filter \"DP < 1 || DP > 12\" \
-        -G-filter-name [DP_1-12] \
-        --set-filtered-genotype-to-no-call true \
-        -O {output.vcf}")
-        shell("gatk SelectVariants -V {output.vcf} \
-        --exclude-filtered true --max-nocall-fraction .2 -O {output.nocall}")
-""" 
-
-# remove individuals filtered in depth filter
-rule passed_depth1:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/depth_filter/DP2_4/{ghost}.DP2_4.filtered.nocall.snps.vcf.gz"
-    output:
-        "data/vcf/depth_filter/passed/DP2_4/{ghost}.DP2_4.filtered.PASSED.vcf.gz"
-    run:
-        shell("gatk SelectVariants \
-        -R {input.ref} \
-        -V {input.vcf} \
-        --set-filtered-gt-to-nocall true \
-        --exclude-filtered true \
-        -O {output}")
-
-rule passed_depth2:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/depth_filter/DP2_8/{ghost}.DP2_8.filtered.nocall.snps.vcf.gz"
-    output:
-        "data/vcf/depth_filter/passed/DP2_8/{ghost}.DP2_8.filtered.PASSED.vcf.gz"
-    run:
-        shell("gatk SelectVariants \
-        -R {input.ref} \
-        -V {input.vcf} \
-        --set-filtered-gt-to-nocall true\
-        --exclude-filtered true \
-        -O {output}")
-
-rule passed_depth3:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/depth_filter/DP2_12/{ghost}.DP2_12.filtered.nocall.snps.vcf.gz"
-    output:
-        "data/vcf/depth_filter/passed/DP2_12/{ghost}.DP2_12.filtered.PASSED.vcf.gz"
-    run:
-        shell("gatk SelectVariants \
-        -R {input.ref} \
-        -V {input.vcf} \
-        --set-filtered-gt-to-nocall true\
-        --exclude-filtered true \
-        -O {output}")
-
-rule passed_depth4:
-    input:
-        ref = "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta",
-        vcf = "data/vcf/depth_filter/DP1_12/{ghost}.DP1_12.filtered.nocall.snps.vcf.gz"
-    output:
-        "data/vcf/depth_filter/passed/DP1_12/{ghost}.DP1_12.filtered.PASSED.vcf.gz"
-    run:
-        shell("gatk SelectVariants \
-        -R {input.ref} \
-        -V {input.vcf} \
-        --set-filtered-gt-to-nocall true\
-        --exclude-filtered true \
-        -O {output}")
-
-# merge VCFs 
-rule gzip:
-    input:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf.gz"
-    output:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf"
-    run:
-        shell("gzip -d {input}")
-
-rule bgzip:
-    input:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf"
-    output:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf.gz"
-    run:
-        shell("bgzip {input}")
-        shell("tabix {output}")
-
-rule merge_vcf:
-    input:
-        expand(config["final_vcf"], ghost = GHOST)
-    output:
-        "data/vcf/final/ALL.DP1_12.filtered.snps.vcf.gz"
-    run:
-        shell("module load bcftools")
-        shell("bcftools concat {input} -Oz -o {output}")
-
-### Making matrices to calculate genotype depth in polyploids ###
-
-# extract allele depth using GATK Variants to table 
-rule extract_depth:
-    input:
-        vcf = "data/vcf/final/ALL.DP1_12.filtered.snps.vcf.gz",
-        ref = config["ref"]
-    output:
-        "data/reports/variantstotable/ALL.DP1_12.filtered.snps.AD.table"
-    run:
-        shell("module load R java maven")
-        shell("module load GATK")
-        shell("gatk VariantsToTable \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -F CHROM -F POS \
-        -GF AD \
-        -O {output}")
+#include: "rules/genotypingpolyploids.smk"
+#include: "rules/qualimap.smk"

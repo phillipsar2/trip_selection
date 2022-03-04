@@ -171,9 +171,54 @@
     "coverage" :
     {
       "mem": "150G",
-      "p" : "high2",
+      "p" : "bigmemm",
       "time" : "14-00:00",
       "name" : "coverage",
+    },
+    "avg_cov_test" :
+    {
+      "mem": "16G",
+      "p" : "bigmemh",
+      "time" : "14-00:00",
+      "name" : "avg_cov_test",
+    },
+# snp calling
+    "align_reads" :
+    {
+      "mem": "48G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "filter",
+      "cpus-per-task": 4,
+    },
+# polyploid genotyping
+    "subset_vcfs" :
+    {
+      "mem": "75G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "subset_vcf",
+    },
+    "extract_AD" :
+    {
+      "mem": "32G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "extract_AD",
+    },
+    "cut" :
+    {
+      "mem": "16G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "cut",
+    },
+    "create_matrices" :
+    {
+      "mem": "24G",
+      "p" : "high2",
+      "time" : "14-00:00",
+      "name" : "create_matrices",
     },
 }
 
