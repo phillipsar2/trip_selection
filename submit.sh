@@ -1,7 +1,7 @@
 #!/bin/bash
-snakemake --jobs 10 --use-conda \
+snakemake --jobs 20 --use-conda \
 --rerun-incomplete \
---latency-wait 7200 \
+--latency-wait 120 \
 --cluster-config submit.2.json \
 --cluster "sbatch --mem {cluster.mem} -J {cluster.name} --time {cluster.time} -p {cluster.p}"
 

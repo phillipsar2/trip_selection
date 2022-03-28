@@ -2,7 +2,6 @@ configfile: "config.yaml"
 import pandas as pd
 
 # WILD CARDS 
-## new data
 ### names of raw unmerged sequence reads 
 READ = glob_wildcards("data/raw/{read}_1.fq.gz").read
 ### merge bam files - file contains a list of genotype followed by two sequence names to be merged
@@ -17,20 +16,6 @@ SCAFFOLD = config["scaffolds"]
 SCAF = list(SCAFFOLD.split())
 ### name of 10 repeat sequences being mapped to tripsacum for relative abundance
 REPEAT = glob_wildcards("data/repeat_abundance/repeat_seq/{repeat}.fasta").repeat
-
-
-## old data 
-SKELETON = config["scaffolds"] 
-GHOST = list(SKELETON.split())
-### scaffolds listed three per line, separated by commas within line
-### GHOST- python list
-
-PUMPKIN = config["contains_snps"]
-PIE = list(PUMPKIN.split())
-### only includes scaffolds that contained snps after filtering steps 
-
-PEAR = glob_wildcards("data/bed_files/{pear}.FINAL.bed").pear
-### names of repeats
 
 rule all:
     input:
@@ -64,16 +49,19 @@ rule all:
 #        alt = expand("data/ebg/input/{scaf}.alt.txt", scaf = SCAF),
 #        tot = expand("data/ebg/input/{scaf}.tot.txt", scaf = SCAF),
 #        err = expand("data/ebg/input/{scaf}.err.txt", scaf = SCAF)
+#        sample = expand("data/ebg/input/{scaf}.loci_positions.txt", scaf = SCAF)
+        ebg = expand("data/ebg/output/{scaf}-diseq-PL.txt", scaf = SCAF)
 # bedtools rules
 #        bamtobed1 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed", bam = BAM),
 #        bamtobed2 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.bed", bam = BAM)
-        coverage = expand("data/coverage/{repeat}/{bam}.{repeat}.coverage.bed", bam = BAM, repeat = REPEAT),
-        zipcov = expand("data/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz", bam = BAM, repeat = REPEAT)
+#        mergebed = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.merged.bed", bam = BAM)
+#        coverage = expand("data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed", bam = BAM, repeat = REPEAT),
+#        zipcov = expand("data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz", bam = BAM, repeat = REPEAT)
 # qualimap
 #        expand("data/reports/qualimap/{bam}_stats/report.pdf", bam = BAM)
 
 # Rules
 #include: "rules/snpcalling.smk"
-include: "rules/bedtools.smk"
-#include: "rules/genotypingpolyploids.smk"
+#include: "rules/bedtools.smk"
+include: "rules/genotypingpolyploids.smk"
 #include: "rules/qualimap.smk"
