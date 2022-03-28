@@ -7,5 +7,5 @@
 #SBATCH -t 07-00:00
 #SBATCH --mem=32G
 
-makeblastdb -in data/genome/zea/Zm-B73-REFERENCE-NAM-5.0.fa \
--out data/genome/zea/B73_db -dbtype nucl -title "Zea mays B73 reference genome" -parse_seqids
+makeblastdb -in data/genome/v1/Td-KS_B6_1-Draft-PanAnd-1.0.noalternate.fasta \
+-out data/genome/v1/Td-KS_B6_1-Draft-PanAnd-1.0.noalternate.fasta -dbtype nucl -title "Tripsacum dactyloides reference genome v1" -parse_seqids
