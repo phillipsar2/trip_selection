@@ -19,9 +19,9 @@ rule bwa_map:
 # module load samtools/1.9 
 rule samtools_sort: 
     input:
-        config["sort.in"]
+        config["map.bam"]
     output:
-        config["sort.out"]
+        config["sort.bam"]
     params:
         tmp = "/scratch/julespor/sort_bam/{read}"
     threads: 4
@@ -34,12 +34,12 @@ rule samtools_sort:
 ## module load GATK/4.2.3.0
 rule mark_dups:
     input:
-        config["sort.out"]
+        config["sort.bam"]
     output:
         bam = config["mark.dups"],
         metrics = "qc/mark_dup/{read}_metrics.txt"
     params:
-        tmp = "/scratch/jullespor/mark_dups/{read}"
+        tmp = "/scratch/julespor/mark_dups/{read}"
     run:
         shell("mkdir -p {params.tmp}")
         shell("gatk MarkDuplicates \
@@ -58,11 +58,12 @@ rule merge_bams:
         A = "data/interm/mark_dups/{mergeA}.dedup.bam",
         B = "data/interm/mark_dups/{mergeB}.dedup.bam"
     output:
-        "data/interm/merge/{geno}.{mergeA}.{mergeB}.merged.dedup.bam"
+        config["merg.bam"]
     threads: 4
     shell:
         """samtools merge -@ {threads} {output} {input.A} {input.B}"""
 
+"""
 # add read groups to merged BAM file
 rule add_rg:
     input:
@@ -85,6 +86,7 @@ rule add_rg:
         --TMP_DIR {params.tmp} \
         --CREATE_INDEX=true")
         shell("rm -rf {params.tmp}")
+"""
 
 # generate VCFs from BAM files
 # https://samtools.github.io/bcftools/bcftools.html#call
@@ -92,9 +94,9 @@ rule add_rg:
 rule vcf_gen:
     input:
         ref=config["ref"],
-        bam="data/interm/rg_bam/bamlist.txt"
+        bam=config["bam.list"]
     output:
-        "data/vcf/raw_vcf/{scaf}.vcf.gz"
+        config["raw.vcf"]
     params:
         region = "{scaf}"
     shell:
@@ -105,30 +107,13 @@ rule vcf_gen:
         bcftools index -t {output}
         """
 
-# VCFs were actually in binary (bcf) format --> convert to compressed vcf before gatk SelectVariants
-# not used in final processing (not needed once data had to be regenerated) 
-rule bcf_to_vcf:
-    input:
-        bcf = "data/vcf/raw_vcf/{ghost}.vcf"
-    output:
-        vcf = "data/vcf/compressed_vcf/{ghost}.vcf.gz"
-    params:
-        temp = "tmp.{ghost}.vcf.gz"
-    shell:
-        """
-        bcftools index -f {input.bcf}
-        bcftools view -O z -o {params.temp} {input.bcf}
-        mv {params.temp} {output.vcf}
-        bcftools index -t {output.vcf}
-        """
-
 # Select only bialleleic SNPs
 rule get_snps:
     input:
         ref = config["ref"],
-        vcf = "data/vcf/raw_vcf/{scaf}.vcf.gz"
+        vcf = config["raw.vcf"]
     output:
-        "data/vcf/snps/{scaf}.snps.vcf.gz"
+        config["unfil.snps"]
     shell:
         """
         module load GATK
@@ -160,15 +145,16 @@ rule diagnostics:
         -F CHROM -F POS -F QUAL -F QD -F DP -F MQ -F AD \
         -O {output}")
 """
+
 # Apply hard filtering following GATK best practices - remove low confidence sites
 # https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2 https://gatk.broadinstitute.org/hc/en-us/articles/360037499012?id=3225
 rule hard_filter:
     input:
-        "data/vcf/snps/{scaf}.snps.vcf.gz"
+        config["unfil.snps"]
     output:
-        filt =  "data/vcf/hard_filter/{scaf}.filtered.snps.vcf.gz",
+        filt =  config["hard.filt"],
 #       filt = low quality sites are labeled but not removed
-        exclude = "data/vcf/hard_filter/{scaf}.nocall.filtered.snps.vcf.gz"
+        exclude = config["hard.excl"]
 #       exclude = low quality sites removed
     run:
         shell("gatk VariantFiltration \
@@ -179,28 +165,17 @@ rule hard_filter:
         shell("gatk SelectVariants -V {output.filt} --exclude-filtered true \
         -O {output.exclude}")
 
-# suspected that filter was not complete so it was reran 
-rule hard_filter2:
-    input:
-        "data/vcf/hard_filter/{scaf}.nocall.filtered.snps.vcf.gz"
-    output:
-        filt =  "data/vcf/hard_filter/{scaf}.filtered.2.snps.vcf.gz",
-#       filt = low quality sites are labeled but not removed
-        exclude = "data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz"
-#       exclude = low quality sites removed
-    run:
-        shell("gatk VariantFiltration \
-        -V {input} \
-        -filter \"QUAL < 30.0\" --filter-name \"QUAL30\" \
-        -O {output.filt}")
-        shell("gatk SelectVariants -V {output.filt} --exclude-filtered true \
-        -O {output.exclude}")
-
 # filtering for different genotype depths; removes indidivuals at a site
+# compared 5 different depth options:
+##### 2 - 4
+##### 2 - 8
+##### 2 - 12
+##### 1 - 8 (chosen depth filter in the end)
+##### 1 - 12
 rule depth2_4:
     input:
         ref = config["ref"],
-        vcf = "data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz"
+        vcf = config["hard.excl"]
     output:
         filt = "data/vcf/depth_filter/DP2_4/{scaf}.DP2_4.filtered.snps.vcf.gz",
         exclude = "data/vcf/depth_filter/DP2_4/{scaf}.nocall.DP2_4.filtered.snps.vcf.gz"
@@ -218,7 +193,7 @@ rule depth2_4:
 rule depth2_8:
     input:
         ref = config["ref"],
-        vcf = "data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz"
+        vcf = config["hard.excl"]
     output:
         filt = "data/vcf/depth_filter/DP2_8/{scaf}.DP2_8.filtered.snps.vcf.gz",
         exclude = "data/vcf/depth_filter/DP2_8/{scaf}.nocall.DP2_8.filtered.snps.vcf.gz"
@@ -236,7 +211,7 @@ rule depth2_8:
 rule depth2_12:
     input:
         ref = config["ref"],
-        vcf = "data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz"
+        vcf = config["hard.excl"]
     output:
         filt = "data/vcf/depth_filter/DP2_12/{scaf}.DP2_12.filtered.snps.vcf.gz",
         exclude = "data/vcf/depth_filter/DP2_12/{scaf}.nocall.DP2_12.filtered.snps.vcf.gz"
@@ -254,7 +229,7 @@ rule depth2_12:
 rule depth1_12:
     input:
         ref = config["ref"],
-        vcf = "data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz"
+        vcf = config["hard.excl"]
     output:
         filt = "data/vcf/depth_filter/DP1_12/{scaf}.DP1_12.filtered.snps.vcf.gz",
         exclude = "data/vcf/depth_filter/DP1_12/{scaf}.nocall.DP1_12.filtered.snps.vcf.gz"
@@ -272,10 +247,10 @@ rule depth1_12:
 rule depth1_8:
     input:
         ref = config["ref"],
-        vcf = "data/vcf/hard_filter/{scaf}.nocall.filtered.2.snps.vcf.gz"
+        vcf = config["hard.excl"]
     output:
-        filt = "data/vcf/depth_filter/DP1_8/{scaf}.DP1_8.filtered.snps.vcf.gz",
-        exclude = "data/vcf/depth_filter/DP1_8/{scaf}.nocall.DP1_8.filtered.snps.vcf.gz"
+        filt = config["dp.filt"],
+        exclude = config["dp.excl"]
     run:
         shell("gatk VariantFiltration \
         -R {input.ref} \
@@ -289,6 +264,7 @@ rule depth1_8:
 
 # max no call - set the maximum proportions of individuals at a site that can be missing (from the depth filter)
 #               for the site to not be removed
+# max no call fraction set to 20%
 rule max_no_call2_4:
     input:
         vcf = "data/vcf/depth_filter/DP2_4/{scaf}.DP2_4.filtered.snps.vcf.gz"
@@ -327,7 +303,7 @@ rule max_no_call1_12:
 
 rule max_no_call1_8:
     input:
-        vcf = "data/vcf/depth_filter/DP1_8/{scaf}.DP1_8.filtered.snps.vcf.gz"
+        vcf = config["dp.filt"]
     output:
         nocall = "data/vcf/max_no_call/DP1_8/{scaf}.maxnocall.DP1_8.filtered.snps.vcf.gz"
     run:
@@ -335,30 +311,24 @@ rule max_no_call1_8:
         --exclude-filtered true --max-nocall-fraction .2 -O {output.nocall}")
 
 # merge VCFs
-rule gzip:
-    input:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf.gz"
-    output:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf"
-    run:
-        shell("gzip -d {input}")
-
-"""
-rule bgzip:
-    input:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf"
-    output:
-        "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf.gz"
-    run:
-        shell("bgzip {input}")
-        shell("tabix {output}")
-"""
-
 rule merge_vcf:
     input:
-        expand(config["final_vcf"], ghost = GHOST)
+        expand(config["max.no.call"], scaf = SCAF)
     output:
-        "data/vcf/final/ALL.DP1_12.filtered.snps.vcf.gz"
+        config["final.vcf"]
     run:
         shell("module load bcftools")
         shell("bcftools concat {input} -Oz -o {output}")
+
+# VCFs had incorrect sample naming
+## merged final VCF had samples renamed using bash script
+rule resample:
+    input:
+        vcf = config["max.no.call"]
+        sample.list = config["sample.list"]
+    output:
+        config["renamed.vcf"]
+    run:
+        shell("module load bcftools")
+        shell("bcftools reheader -s {input.sample.list} \
+        -o {output} {input.vcf}")
