@@ -8,23 +8,65 @@ indiv_bam:
 indiv_bed:
     "data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.bed"
 indiv_bed_merg:
-    "data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.merged.bam"
+    "data/repeat_abundance/bed_files/indiv/final/{bam}.sorted.cut.merged.bed"
 repeat_bed:
-    "data/repeat_abundance/bed_files/repeat/{repeat}.final.bed"
+    "data/repeat_abundance/bed_files/repeat/snake/{repeat}.final.bed"
 coverage:
     "data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz"
+test_repeat:
+    180knob
+    centromere
+    LTR
+    helitron
+    TIR
+repeat:
+    17SrRNA
+    25SrRNA
+    5.8SrRNA
+    brepeat
+    chloroplast
+    maizeTR1
+    mitochondria
+    telomere
+    helitron
+    LTR
+    TIR
+    allTE
 # snpcalling
 ref:
     "data/genome/v1/Td-KS_B6_1-Draft-PanAnd-1.0.noalternate.fasta"
-sort.in:
+map.bam:
     "data/interm/mapped_bam/{read}.mapped.bam"
-sort.out:
+sort.bam:
     "data/interm/sorted_bam/{read}.sorted.bam"
 mark.dups:
     "data/interm/mark_dups/{read}.dedup.bam"
+merg.bam:
+    "data/interm/merge/{geno}.{mergeA}.{mergeB}.merged.dedup.bam"
+bam.list:
+    "data/interm/rg_bam/bamlist.txt"
+raw.vcf:
+    "data/vcf/raw_vcf/{scaf}.vcf.gz"
+unfil.snps:
+    "data/vcf/snps/{scaf}.snps.vcf.gz"
+hard.filt:
+    "data/vcf/hard_filter/{scaf}.filtered.snps.vcf.gz"
+hard.excl:
+    "data/vcf/hard_filter/{scaf}.nocall.filtered.snps.vcf.gz"
+dp.filt:
+    "data/vcf/depth_filter/DP1_8/{scaf}.DP1_8.filtered.snps.vcf.gz"
+dp.excl:
+    "data/vcf/depth_filter/DP1_8/{scaf}.nocall.DP1_8.filtered.snps.vcf.gz"
+max.no.call:
+    "data/vcf/max_no_call/DP1_8/{scaf}.maxnocall.DP1_8.filtered.snps.vcf.gz"
+final.vcf:
+    "data/vcf/final/ALL.DP1_8.filtered.snps.vcf.gz"
+sample.list:
+    "data/vcf/final/sample.names.txt"
+renamed.vcf:
+    "data/vcf/final/rename/{scaf}.DP1_8.final.rename.vcf.gz"
+
 ## old:    "data/genome/Tripsacum_dactyloides-southern_hifiasm-bionano_scaffolds_v1.0.fasta"
-final_vcf:
-    "data/vcf/max_no_call/DP1_12/{ghost}.maxnocall.DP1_12.filtered.snps.vcf.gz"
 scaffolds:
     scaf_1
     scaf_2
@@ -86,70 +128,50 @@ scaffolds:
     scaf_161,scaf_162,scaf_163,scaf_164,scaf_165,scaf_166,scaf_167,scaf_168
 
 contains_snps:
-    scaf_1,scaf_2,scaf_3
-    scaf_4,scaf_5,scaf_6
-    scaf_7,scaf_8,scaf_9
-    scaf_10,scaf_11,scaf_12
-    scaf_13,scaf_14,scaf_15
-    scaf_16,scaf_17,scaf_18
-    scaf_19,scaf_20,scaf_21
-    scaf_22,scaf_23,scaf_24
-    scaf_25,scaf_26,scaf_27
-    scaf_28,scaf_29,scaf_30
-    scaf_31,scaf_32,scaf_33
-    scaf_34,scaf_35,scaf_36
-    scaf_37,scaf_38,scaf_39
-    scaf_40,scaf_41,scaf_42
-    scaf_43,scaf_44,scaf_45
-    scaf_46,scaf_47,scaf_48
-    scaf_49,scaf_50,scaf_51
-    scaf_52,scaf_53,scaf_54
-    scaf_58,scaf_59,scaf_60
-    scaf_61,scaf_62,scaf_63
-    scaf_73,scaf_74,scaf_75
-    scaf_79,scaf_80,scaf_81
-    scaf_85,scaf_86,scaf_87
-    scaf_88,scaf_89,scaf_90
-    scaf_97,scaf_98,scaf_99
-    scaf_100,scaf_101,scaf_102
-    scaf_103,scaf_104,scaf_105
-    scaf_106,scaf_107,scaf_108
-    scaf_112,scaf_113,scaf_114
-    scaf_115,scaf_116,scaf_117
-    scaf_121,scaf_122,scaf_123
-    scaf_127,scaf_128,scaf_129
-    scaf_130,scaf_131,scaf_132
-    scaf_136,scaf_137,scaf_138
-    scaf_142,scaf_143,scaf_144
-    scaf_145,scaf_146,scaf_147
-    scaf_148,scaf_149,scaf_150
-    scaf_154,scaf_155,scaf_156
-    scaf_157,scaf_158,scaf_159
-    scaf_169,scaf_170,scaf_171
-    scaf_175,scaf_176,scaf_177
-    scaf_181,scaf_182,scaf_183
-    scaf_187,scaf_188,scaf_189
-    scaf_202,scaf_203,scaf_204
-    scaf_205,scaf_206,scaf_207
-    scaf_208,scaf_209,scaf_210
-    scaf_214,scaf_215,scaf_216
-    scaf_217,scaf_218,scaf_219
-    scaf_226,scaf_227,scaf_228
-    scaf_229,scaf_230,scaf_231
-    scaf_238,scaf_239,scaf_240
-    scaf_244,scaf_245,scaf_246
-    scaf_247,scaf_248,scaf_249
-    scaf_256,scaf_257,scaf_258
-    scaf_262,scaf_263,scaf_264
-    scaf_265,scaf_266,scaf_267
-    scaf_271,scaf_272,scaf_273
-    scaf_277,scaf_278,scaf_279
-    scaf_280,scaf_281,scaf_282
-    scaf_283,scaf_284,scaf_285
-    scaf_286,scaf_287,scaf_288
-    scaf_298,scaf_299,scaf_300
-    scaf_304,scaf_305,scaf_306
-    scaf_307,scaf_308,scaf_309
-    scaf_316,scaf_317,scaf_318
-    scaf_322,scaf_323,scaf_324
-    scaf_340,scaf_341,scaf_342,scaf_343
+    scaf_1
+    scaf_2
+    scaf_3
+    scaf_4
+    scaf_5
+    scaf_6
+    scaf_8
+    scaf_10
+    scaf_11
+    scaf_12
+    scaf_13
+    scaf_14
+    scaf_15
+    scaf_16,scaf_17
+    scaf_18,scaf_19
+    scaf_20,scaf_21
+    scaf_22,scaf_23
+    scaf_24,scaf_25
+    scaf_27,scaf_28
+    scaf_29
+    scaf_33,scaf_36
+    scaf_38,scaf_39
+    scaf_41,scaf_44
+    scaf_46,scaf_48
+    scaf_50,scaf_51
+    scaf_54,scaf_57
+    scaf_59,scaf_60
+    scaf_62,scaf_65
+    scaf_66,scaf_68
+    scaf_70,scaf_72
+    scaf_74,scaf_76
+    scaf_77,scaf_78
+    scaf_79,scaf_80
+    scaf_81,scaf_82
+    scaf_83,scaf_84
+    scaf_85,scaf_86
+    scaf_87,scaf_88
+    scaf_89,scaf_90,scaf_91
+    scaf_93,scaf_94,scaf_95
+    scaf_96,scaf_97,scaf_98
+    scaf_99,scaf_100,scaf_101
+    scaf_105,scaf_106,scaf_107
+    scaf_108,scaf_109,scaf_110
+    scaf_111,scaf_112,scaf_113
+    scaf_117,scaf_118,scaf_119
+    scaf_126,scaf_127,scaf_128
+    scaf_133,scaf_134,scaf_135,scaf_136

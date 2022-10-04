@@ -14,8 +14,18 @@ BAM = glob_wildcards("data/interm/rg_bam/{bam}.dedup.add_rg.bam").bam
 ### scaffold groupings for vcf files based on relative size of scaffolds 
 SCAFFOLD = config["scaffolds"]
 SCAF = list(SCAFFOLD.split())
-### name of 10 repeat sequences being mapped to tripsacum for relative abundance
-REPEAT = glob_wildcards("data/repeat_abundance/repeat_seq/{repeat}.fasta").repeat
+### scaffolds that after all filters still contains snps
+CONTAINSSNPS = config["contains_snps"]
+SNPS = list(CONTAINSSNPS.split())
+### name of Ecotype_Indiv of 42 Tripsacum individuals 
+ECO = glob_wildcards("data/repeat_abundace/coverage/helitron/{eco}.helitron.flipped.coverage.bed.gz").eco
+### names of all repeats used for analysis, including TEs
+REPEATCLASS = config["repeat"]
+REPEAT = list(REPEATCLASS.split())
+### K values for entropy admixture estimates
+KCLUSTERS = ["2", "3", "4", "5", "6", "7", "8"]
+### chain number for entropy runs (also used as seed)
+CHAIN = ["1", "2", "3"]
 
 rule all:
     input:
@@ -43,20 +53,25 @@ rule all:
 #        maxnocall3 = expand("data/vcf/max_no_call/DP2_12/{scaf}.maxnocall.DP2_12.filtered.snps.vcf.gz", scaf = SCAF),
 #        maxnocall4 = expand("data/vcf/max_no_call/DP1_12/{scaf}.maxnocall.DP1_12.filtered.snps.vcf.gz", scaf = SCAF),
 #        maxnocall5 = expand("data/vcf/max_no_call/DP1_8/{scaf}.maxnocall.DP1_8.filtered.snps.vcf.gz", scaf = SCAF)
+#        merge_vcf = expand("data/vcf/final/ALL.DP1_8.filtered.snps.vcf.gz")
 # genotypingpolyploids rules
 #        subsetAD = expand("data/reports/AD/{ghost}.final.AD.table", ghost = GHOST)
 #        cut = expand("data/reports/AD/{scaf}.final.DP1_8.AD.table", scaf = SCAF)
 #        alt = expand("data/ebg/input/{scaf}.alt.txt", scaf = SCAF),
-#        tot = expand("data/ebg/input/{scaf}.tot.txt", scaf = SCAF),
+#        tot = expand("data/ebg/input/{scaf}.tot.txt", scaf = SCAF)
 #        err = expand("data/ebg/input/{scaf}.err.txt", scaf = SCAF)
 #        sample = expand("data/ebg/input/{scaf}.loci_positions.txt", scaf = SCAF)
-        ebg = expand("data/ebg/output/{scaf}-diseq-PL.txt", scaf = SCAF)
+#        ebg = expand("data/ebg/output/{scaf}-diseq-PL.txt", scaf = SCAF)
+#        gl_matrix = expand("data/ebg/output/{snps}-GL.txt", snps = SNPS)
+        traceplots = expand("data/entropy/output/traceplots.k{kclusters}.c{chain}.pdf", kclusters = KCLUSTERS, chain = CHAIN)
+#        rhat = expand("data/entropy/output/rstat.k{kclusters}.txt", kclusters = KCLUSTERS)
 # bedtools rules
 #        bamtobed1 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed", bam = BAM),
 #        bamtobed2 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.bed", bam = BAM)
 #        mergebed = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.merged.bed", bam = BAM)
-#        coverage = expand("data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed", bam = BAM, repeat = REPEAT),
-#        zipcov = expand("data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz", bam = BAM, repeat = REPEAT)
+#        remo_alt = expand("data/repeat_abundance/coverage/{rclass}/{bam}.{rclass}.noalt.flipped.coverage.bed.gz", bam = BAM, rclass = RCLASS)
+#        cov = expand("data/repeat_abundance/coverage/{bam}.{repeat}.coverage.bed.gz", repeat = REPEAT, bam = BAM)
+#        sum = expand("data/repeat_abundance/coverage/sum/{repeat}/{bam}.{repeat}.sum.txt", bam = BAM, repeat = REPEAT)
 # qualimap
 #        expand("data/reports/qualimap/{bam}_stats/report.pdf", bam = BAM)
 
