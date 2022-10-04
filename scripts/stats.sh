@@ -5,7 +5,20 @@
 #SBATCH -o /group/jrigrp10/tripsacum_dact/slurm_log/stdoutput_%j.txt
 #SBATCH -p bigmemh
 #SBATCH -t 07-00:00
-#SBATCH --mem=24G
+#SBATCH --mem=10G
 
-module load bcftools
-bcftools stats data/vcf/final/ALL42.DP1_12.final.vcf.gz > data/vcf/final/final42.vcf.stats.txt
+#module load bcftools
+#bcftools stats data/vcf/final/20k.DP1_8.filtered.vcf > data/vcf/final/20k.DP1_8.stats.txt
+
+module load vcftools
+VCF=data/vcf/final/20k.DP1_8.filtered.vcf
+OUT=data/vcf/final/20k.DP1_8.vcfstats.txt
+
+# mean depth of coverage per individual
+vcftools --vcf $VCF --depth --out $OUT
+# mean deopth of coverage per site
+vcftools --vcf $VCF --site-mean-depth --out $OUT
+# proportion of missing data per sample
+vcftools --vcf $VCF --missing-indv --out $OUT
+# proportion of missing data per site
+vcftools --vcf $VCF --missing-site --out $OUT
