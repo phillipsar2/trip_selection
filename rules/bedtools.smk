@@ -13,33 +13,6 @@ rule blast:
         shell("blastn -query {input.query} -db {input.db} \
         -outfmt '7 qseqid sseqid length qlen slen qstart qend sstart send evalue' \
         -out {output} -num_threads {threads}")
-         
-
-# convert 47 individual BAMs to .bed file for comparison to repeat.bed
-rule bamtobed:
-    input:
-        config["indiv_bam"]
-    params:
-        temp = "data/interm/rg_bam/temp1.{bam}.bed",
-    output:
-        full = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed",
-        cut = config["indiv_bed"]
-    run:
-        shell("module load bedtools")
-        shell("bedtools bamtobed -i {input} > {params.temp}")
-        shell("sort -k1,1 -k2,2n {params.temp} > {output.full}")
-        shell("cut -f 1-3 {output.full} > {output.cut}")
-        shell("rm {params.temp}")
-
-# merge individual.bed files to remove overlapping regions
-rule mergebed:
-    input:
-        config["indiv_bed"]
-    output:
-        config["indiv_bed_merg"]
-    run:
-        shell("module load bedtools")
-        shell("bedtools merge -c 1 -o count -i {input} > {output}")
 
 # remove entries for alternate scaffolds from coverage.bed files from the 3 TE classes
 rule filterTEcov:
@@ -54,33 +27,84 @@ rule filterTEcov:
         shell("gunzip -d {input}")
         shell("grep -iv 'alt' {params.alt} > {params.noalt}")
         shell("gzip {params.temp2}")
-
-# for every intersect found between two files, a per base pair coverage is reported for file A (as of v2.24.0)
-# https://bedtools.readthedocs.io/en/latest/content/tools/coverage.html
-# INCORRECT METHOD
-rule coverage:
+# remove secondary alignments from BAM files
+rule align_filt:
     input:
-        repeat = config["repeat_bed"],
-        indiv = config["indiv_bed_merg"]
+        config["indiv_bam"]
     output:
-        "data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz"
+        "data/repeat_abundance/tmp/{bam}.primary.bam.gz"
     params:
-        temp = "data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed"
+        tmp = "data/repeat_abundance/tmp/{bam}.primary.bam"
     run:
-        shell("bedtools coverage -a {input.repeat} -b {input.indiv} -d > {params.temp}")
-        shell("gzip {params.temp}")
+#        shell("module load samtools")
+        shell("samtools view -F 2048 -bo {params.tmp} {input}")
+        shell("gzip {params.tmp}")
 
-# sums the fifth column of the coverage.bed files --> sum of the per base coverage for all regions mapping to repeat region
-### will I be able to have one rule for A coverage and B coverage files?? I want to keep the sums separate 
-rule sum_coverage:
+# convert filtered BAM files to bed files, sort, and remove duplicate positions (same chrom, start, stop)
+# COMMENTED OUT ON: 04/04/23
+# REASON: the output is the same as the output for the rule gzip below 
+"""
+rule bam2bed:
     input:
-        "data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed.gz"
+        "data/repeat_abundance/tmp/{bam}.primary.bam.gz"
     output:
-        "data/repeat_abundance/coverage/sum/{repeat}/{bam}.{repeat}.sum.txt"
+#        bed = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed.gz",
+        rmdup = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed.gz"
     params:
-        temp = "data/repeat_abundance/coverage/{repeat}/{bam}.{repeat}.coverage.bed"
+        tmp0 = "data/repeat_abundance/tmp/{bam}.primary.bam",
+        tmp1 = "data/repeat_abundance/bed_files/indiv/{bam}.unsorted.bed",
+        tmp2 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed",
+        tmp3 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed"
     run:
-        shell("gunzip -d {input}")
-        shell("echo '{params.temp} total repeat coverage' > {output}")
-        shell("awk -F '\t' '{{sum += $5}} END {{print sum}}' {params.temp} >> {output}")
-        shell("gzip {params.temp}")
+#        shell("module load bedtools")
+        shell("gzip -d {input}")
+        shell("bedtools bamtobed -i {params.tmp0} > {params.tmp1}")
+        shell("sort -k1,1 -k2,2n -k3,3n {params.tmp1} > {params.tmp2}")
+        shell("sort -k1,1 -k2,2n -k3,3n -u {params.tmp2} > {params.tmp3}")
+        shell("gzip {params.tmp0}")
+        shell("gzip {params.tmp2}")
+        shell("gzip {params.tmp3}")
+        shell("rm {params.tmp1}")
+"""
+# i had issue with this rule where two jobs would try to work on the same input,
+# this created problems with trying to unzip an already unzipped file, trying to
+# zip a file another rule is using, etc
+# SOO I unzipped all the inputs, and I'll rezip them when I'm done (see rule gzip below)
+rule intersect:
+    input:
+        in1 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed",
+        in2 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed",
+        repeat = "data/repeat_abundance/bed_files/repeat/snake/{te}.final.bed"
+    output:
+        out1 = "data/repeat_abundance/intersect/{te}/{bam}.{te}.intersect.bed.gz",
+        out2 = "data/repeat_abundance/intersect/{te}/{bam}.{te}.intersect.rmdup.bed.gz"
+    params:
+#        in1 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed",
+#        in2 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed",
+        tmp1 = "data/repeat_abundance/intersect/{te}/{bam}.{te}.intersect.bed",
+        tmp2 = "data/repeat_abundance/intersect/{te}/{bam}.{te}.intersect.rmdup.bed"
+    run:
+#        shell("module load bedtools")
+#        shell("gzip -d {input.in1}")
+#        shell("gzip -d {input.in2}")
+        shell("bedtools intersect -u -f 0.5 -s \
+        -a {input.in1} -b {input.repeat} \
+        > {params.tmp1}")
+        shell("bedtools intersect -u -f 0.5 -s \
+        -a {input.in2} -b {input.repeat} \
+        > {params.tmp2}")
+        shell("gzip {params.tmp1}")
+        shell("gzip {params.tmp2}")
+#        shell("gzip {params.in1}")
+#        shell("gzip {params.in2}")
+
+rule gzip:
+    input:
+        in1 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed",
+        in2 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed"
+    output:
+        out1 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed.gz",
+        out2 = "data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed.gz"
+    run:
+        shell("gzip {input.in1}")
+        shell("gzip {input.in2}")

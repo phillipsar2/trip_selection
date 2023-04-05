@@ -26,6 +26,8 @@ REPEAT = list(REPEATCLASS.split())
 KCLUSTERS = ["2", "3", "4", "5", "6", "7", "8"]
 ### chain number for entropy runs (also used as seed)
 CHAIN = ["1", "2", "3"]
+### TEs to be intersected with indiv.bed files to assess repeat abundance
+TE = ["allTE", "helitron", "LTR", "TIR"]
 
 rule all:
     input:
@@ -63,20 +65,22 @@ rule all:
 #        sample = expand("data/ebg/input/{scaf}.loci_positions.txt", scaf = SCAF)
 #        ebg = expand("data/ebg/output/{scaf}-diseq-PL.txt", scaf = SCAF)
 #        gl_matrix = expand("data/ebg/output/{snps}-GL.txt", snps = SNPS)
-        traceplots = expand("data/entropy/output/traceplots.k{kclusters}.c{chain}.pdf", kclusters = KCLUSTERS, chain = CHAIN)
+#        traceplots = expand("data/entropy/output/traceplots.k{kclusters}.c{chain}.pdf", kclusters = KCLUSTERS, chain = CHAIN)
 #        rhat = expand("data/entropy/output/rstat.k{kclusters}.txt", kclusters = KCLUSTERS)
 # bedtools rules
 #        bamtobed1 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed", bam = BAM),
 #        bamtobed2 = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.bed", bam = BAM)
 #        mergebed = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.cut.merged.bed", bam = BAM)
 #        remo_alt = expand("data/repeat_abundance/coverage/{rclass}/{bam}.{rclass}.noalt.flipped.coverage.bed.gz", bam = BAM, rclass = RCLASS)
-#        cov = expand("data/repeat_abundance/coverage/{bam}.{repeat}.coverage.bed.gz", repeat = REPEAT, bam = BAM)
-#        sum = expand("data/repeat_abundance/coverage/sum/{repeat}/{bam}.{repeat}.sum.txt", bam = BAM, repeat = REPEAT)
+#        rmdup_bed = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.rmdup.bed.gz", bam = BAM)
+        TEintersect1 = expand("data/repeat_abundance/intersect/{te}/{bam}.{te}.intersect.bed.gz", bam = BAM, te = TE),
+        TEintersect2 = expand("data/repeat_abundance/intersect/{te}/{bam}.{te}.intersect.rmdup.bed.gz", bam = BAM, te = TE), 
+        #gzip_bed_file = expand("data/repeat_abundance/bed_files/indiv/{bam}.sorted.bed.gz", bam = BAM)
 # qualimap
 #        expand("data/reports/qualimap/{bam}_stats/report.pdf", bam = BAM)
 
 # Rules
 #include: "rules/snpcalling.smk"
-#include: "rules/bedtools.smk"
-include: "rules/genotypingpolyploids.smk"
+include: "rules/bedtools.smk"
+#include: "rules/genotypingpolyploids.smk"
 #include: "rules/qualimap.smk"

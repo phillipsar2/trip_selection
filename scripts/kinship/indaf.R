@@ -6,14 +6,14 @@ library("memuse", lib.loc = "~/R_Packages/R3.6.3")
 library("tidyr", lib.loc = "~/R_Packages/R3.6.3")
 
 # load filtered, unzipped VCF
-vcf <- read.vcfR(file = "data/vcf/final/ALL.DP1_8.filtered.snps.vcf.gz")
-meta <- read.table("data/entropy/metadata.txt")
+vcf <- read.vcfR(file = "data/vcf/final/ALL.DP1_8.rename.vcf.gz")
+#meta <- read.table("data/entropy/metadata.txt")
 
 # extract allele depth
 ad <- extract.gt(vcf, element = 'AD', as.numeric = F)
 
 # shorten individual names (will do once I see original results)
-colnames(ad) <- meta$V1
+#colnames(ad) <- meta$V1
 
 # separate reference and alternative columns
 ref <- masplit(ad, delim = ",", sort = 0, record = 1)
